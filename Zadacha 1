@@ -1,0 +1,108 @@
+//В текстовом файле c именем FN1 даны примеры домашней работы 10-тиклассника. в формате: <операнд><знак><операнд>=<ответ> 
+//Операнды являются не более, чем трехзначными двенадцатеричными числами, в качестве знаков операций используются сложить('+'), вычесть('-') и умножить('*'). 
+//Надо проверить домашнюю работу десятикласcника, учитывая, что ответ так же должен быть двенадцатеричным числом. 
+//Результат проверки записывается в выходной файл с именем FN2, после неверно решенных примеров ставится знак '-'.
+#include "pt4.h"
+#include "string"
+#include "fstream"
+#include "iostream"
+using namespace std;
+float power(float a, int b) {
+	float s = 1.0;
+	for (int i = 0; i < b; i++) {
+		s *= a;
+	}
+	return s;
+}
+bool CHECKERTYPE(string a, int b) {
+	string alphabet = "0123456789ABCDEFGHIGKLMNOPQRSTUVWXYZ";
+	bool ans = true;
+	int i = 0;
+	while (ans && i < a.length())
+	{
+		if (alphabet.find(a[i]) > b) {
+			ans = false;
+		}
+		i++;
+	}
+	return ans;
+}
+string PEREVODTO(int a, int n) {
+	string alphabet = "0123456789ABCDEFGHIGKLMNOPQRSTUVWXYZ";
+	if (a < n) {
+		string b = "";
+		b += alphabet[a];
+		return b;
+	}
+	else {
+		return PEREVODTO(a / n, n) + alphabet[a % n];
+	}
+}
+int PEREVODTO10(string a, int b) {
+	string alphabet = "0123456789ABCDEFGHIGKLMNOPQRSTUVWXYZ";
+	int n = 0,
+		i = a.length();
+	if (CHECKERTYPE(a, b)) {
+		while (i > 0) {
+			i--;
+			n += alphabet.find(a[i]) * power(b, a.length() - i - 1);
+		}
+	}
+	return n;
+}
+
+void Solve()
+{
+    Task("Five7");
+	string Number1,Number2,Inp,Operation,Answ,Primer;
+	bool An;
+	string fn1, fn2;
+	pt >> fn1 >> fn2;
+	ifstream f1(fn1);
+	ofstream f2(fn2);
+	while (f1 >> Primer) {
+		Number1 = "";
+		Number2 = "";
+		Operation = "";
+		Answ = "";
+		An = false;
+		for (int i = 0; i < Primer.length(); i++) {
+			if (Operation == "" && Primer[i] != '+' && Primer[i] != '-' && Primer[i] != '=' && Primer[i] != '*') {
+				Number1 += Primer[i];
+			}
+			else if (Primer[i] == '=') {
+				An = true;
+			}
+			else if (An) {
+				Answ += Primer[i];
+			}
+			else if (Operation == "" && !(Primer[i] != '+' && Primer[i] != '-' && Primer[i] != '=' && Primer[i] != '*')) {
+				Operation = Primer[i];
+			}
+			else if (Operation != "" && Primer[i] != '+' && Primer[i] != '-' && Primer[i] != '=' && Primer[i] != '*') {
+				Number2 += Primer[i];
+			}
+		}
+		An = false;
+		if (Operation == "+") {
+			if (PEREVODTO10(Answ, 12) == (PEREVODTO10(Number1, 12) + PEREVODTO10(Number2, 12))) An = true;
+			else An = false;
+		}
+		else if (Operation == "-") {
+			if (PEREVODTO10(Answ, 12) == (PEREVODTO10(Number1, 12) - PEREVODTO10(Number2, 12))) An = true;
+			else An = false;
+		}
+		else if (Operation == "*") {
+			if (PEREVODTO10(Answ, 12) == (PEREVODTO10(Number1, 12) * PEREVODTO10(Number2, 12))) An = true;
+			else An = false;
+		}
+		if (An) {
+			f2 << Primer << "" << endl;
+		}
+		else {
+			f2 << Primer << " -" << endl;
+		}
+	}
+	f1.close();
+	f2.close();
+}
